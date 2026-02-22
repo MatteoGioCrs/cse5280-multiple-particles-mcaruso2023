@@ -21,7 +21,7 @@ Computational Complexity: You must now track and update velocity vectors for eve
 * Stability Sensitivity: If the  value is too high, particles might ignore obstacles behind them so completely that they become unstable if they are forced to move backward (like being pushed by a wall), potentially leading to unrealistic overlaps or "teleporting" artifacts in the simulation.
 * Parameter Tuning: It adds more variables (like ) that must be carefully tuned to prevent the simulation from looking either too rigid (like marbles) or too "ghost-like" (where they phase through each other's backs).
 
-### Isotropic Model
+Isotropic Model
 <img width="599" height="594" alt="Isotropic Model 2" src="https://github.com/user-attachments/assets/798d683d-69aa-48a7-9a4f-ac4e0a1e458b" />
-### Anisotropic Model
+Anisotropic Model
 <img width="599" height="594" alt="Anisotropic Model 2" src="https://github.com/user-attachments/assets/bf0c5415-2702-45ac-ba0d-58f224ae527b" />
