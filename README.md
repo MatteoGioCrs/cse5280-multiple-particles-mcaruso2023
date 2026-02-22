@@ -22,6 +22,6 @@ Computational Complexity: You must now track and update velocity vectors for eve
 * Parameter Tuning: It adds more variables (like ) that must be carefully tuned to prevent the simulation from looking either too rigid (like marbles) or too "ghost-like" (where they phase through each other's backs).
 
 Isotropic Model
-<img width="599" height="594" alt="Isotropic Model 2" src="https://github.com/user-attachments/assets/798d683d-69aa-48a7-9a4f-ac4e0a1e458b" />
+* <img width="599" height="594" alt="Isotropic Model 2" src="https://github.com/user-attachments/assets/798d683d-69aa-48a7-9a4f-ac4e0a1e458b" />
 Anisotropic Model
-<img width="599" height="594" alt="Anisotropic Model 2" src="https://github.com/user-attachments/assets/bf0c5415-2702-45ac-ba0d-58f224ae527b" />
+* <img width="599" height="594" alt="Anisotropic Model 2" src="https://github.com/user-attachments/assets/bf0c5415-2702-45ac-ba0d-58f224ae527b" />
