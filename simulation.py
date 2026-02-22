@@ -3,13 +3,33 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 # --- 1. Simulation Parameters ---
-N_PARTICLES = 10        # Number of agents 
-ALPHA = 0.05            # Step size for gradient descent [cite: 57]
+N_PARTICLES = 10         
+ALPHA = 0.05            
 GOAL = np.array([8.0, 8.0])
-R_PERSONAL = 1.0        # Radius for personal space (Isotropic force) [cite: 68]
+R_PERSONAL = 1.0        
 
 # Initialize N particles with random distinct starting positions 
 positions = np.random.rand(N_PARTICLES, 2) * 3
+
+def get_wall_gradient(pos, w_start, w_end, R_wall=0.5):
+    """Calculates the quadratic penalty gradient from a line segment (wall)."""
+    wall_vec = w_end - w_start
+    wall_len_sq = np.dot(wall_vec, wall_vec)
+    
+    if wall_len_sq == 0:
+        closest_point = w_start
+    else:
+        # Project particle position onto the wall segment and clamp between 0 and 1
+        t = max(0.0, min(1.0, np.dot(pos - w_start, wall_vec) / wall_len_sq))
+        closest_point = w_start + t * wall_vec
+        
+    diff = pos - closest_point
+    dist = np.linalg.norm(diff)
+    
+    # Apply quadratic band penalty if within R_wall
+    if 0 < dist < R_wall:
+        return -(R_wall - dist) * (diff / dist)
+    return np.zeros(2)
 
 def compute_gradients(pos):
     """Calculates the total gradient for each particle."""
@@ -39,17 +59,32 @@ def compute_gradients(pos):
                 grad_i += grad_social
                 
         # C. Wall Gradient
-        # TODO: Implement wall penalty terms based on your floor plan [cite: 47, 53]
+        walls = [
+            (np.array([2.0, 0.0]), np.array([2.0, 5.0])),
+            (np.array([5.0, 5.0]), np.array([5.0, 10.0]))
+        ]
+        
+        # C. Wall Gradient
+        for w_start, w_end in walls:
+            grad_i += 2.0 * get_wall_gradient(xi, w_start, w_end)
         
         gradients[i] = grad_i
         
     return gradients
 
-# --- 2. Animation Setup --- 
+# --- 2. Animation Setup ---
 fig, ax = plt.subplots(figsize=(6, 6))
 ax.set_xlim(-1, 10)
 ax.set_ylim(-1, 10)
 ax.set_title("Multi-Particle Animation (Isotropic)")
+
+# Draw the walls on the plot
+walls = [
+    ([2.0, 2.0], [0.0, 5.0]),
+    ([5.0, 5.0], [5.0, 10.0])
+]
+for x_coords, y_coords in walls:
+    ax.plot(x_coords, y_coords, 'k-', linewidth=3)
 
 # Plot goal and initial particles
 ax.plot(GOAL[0], GOAL[1], 'rX', markersize=10, label='Goal')
