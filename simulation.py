@@ -8,8 +8,8 @@ ALPHA = 0.05
 GOAL = np.array([8.0, 8.0])
 R_PERSONAL = 1.0        
 
-# Initialize N particles with random distinct starting positions 
 positions = np.random.rand(N_PARTICLES, 2) * 3
+velocities = np.zeros((N_PARTICLES, 2))
 
 def get_wall_gradient(pos, w_start, w_end, R_wall=0.5):
     """Calculates the quadratic penalty gradient from a line segment (wall)."""
@@ -31,32 +31,45 @@ def get_wall_gradient(pos, w_start, w_end, R_wall=0.5):
         return -(R_wall - dist) * (diff / dist)
     return np.zeros(2)
 
-def compute_gradients(pos):
-    """Calculates the total gradient for each particle."""
+def compute_gradients(pos, vels, beta=2.0):
     gradients = np.zeros_like(pos)
     
     for i in range(N_PARTICLES):
         xi = pos[i]
         grad_i = np.zeros(2)
         
-        # A. Goal Gradient (Attractive Cost)
-        # Cost = 0.5 * ||xi - GOAL||^2  =>  Gradient = xi - GOAL
+        # Determine the unit direction vector of motion (v_hat)
+        speed = np.linalg.norm(vels[i])
+        if speed > 0.001:
+            v_hat = vels[i] / speed
+        else:
+            # Fallback: If stationary, assume facing the goal
+            v_hat = (GOAL - xi)
+            v_hat = v_hat / np.linalg.norm(v_hat)
+
+        # A. Goal Gradient (Same as before)
         grad_goal = (xi - GOAL)
-        grad_i += 0.1 * grad_goal  # Weighting the goal attraction
+        grad_i += 0.1 * grad_goal 
         
-        # B. Social Force Gradient (Isotropic - Quadratic Repulsion) [cite: 67]
+        # B. Social Force Gradient (Anisotropic)
         for j in range(N_PARTICLES):
-            if i == j:
-                continue
-            xj = pos[j]
-            diff = xi - xj
-            dij = np.linalg.norm(diff) # Distance between particle i and j [cite: 69]
+            if i == j: continue
             
-            # If within personal space, apply repulsion [cite: 68]
+            xj = pos[j]
+            diff = xi - xj 
+            dij = np.linalg.norm(diff)
+            
             if 0 < dij <= R_PERSONAL:
-                # Gradient of C_social = 0.5 * (R - dij)^2  => -(R - dij) * (diff / dij)
-                grad_social = -(R_PERSONAL - dij) * (diff / dij)
-                grad_i += grad_social
+                # 1. Calculate the standard isotropic gradient
+                grad_iso = -(R_PERSONAL - dij) * (diff / dij)
+                
+                # 2. Calculate the anisotropic directional weight
+                direction_to_j = (xj - xi) / dij
+                dot_prod = np.dot(v_hat, direction_to_j)
+                weight = 1.0 + beta * max(0.0, dot_prod)
+
+                # 3. Apply the weight to the social gradient
+                grad_i += grad_iso * weight
                 
         # C. Wall Gradient
         walls = [
@@ -92,16 +105,18 @@ scatter = ax.scatter(positions[:, 0], positions[:, 1], c='blue', s=50, label='Pa
 ax.legend()
 
 def update(frame):
-    """Animation update function called every frame."""
-    global positions
+    global positions, velocities
     
-    # Calculate total gradient for all particles
-    grads = compute_gradients(positions)
+    # Calculate total gradient (pass velocities now)
+    grads = compute_gradients(positions, velocities)
     
-    # Update positions via Gradient Descent: x^(k+1) = x^(k) - alpha * grad(C) 
-    positions = positions - ALPHA * grads
+    # Calculate new positions
+    new_positions = positions - ALPHA * grads
     
-    # Update the scatter plot data
+    # Update velocities (displacement over this step)
+    velocities = new_positions - positions
+    positions = new_positions
+    
     scatter.set_offsets(positions)
     return scatter,
 
