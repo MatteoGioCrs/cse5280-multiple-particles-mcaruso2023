@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 # --- 1. Simulation Parameters ---
-N_PARTICLES = 10         
+N_PARTICLES = 50         
 ALPHA = 0.05            
 GOAL = np.array([8.0, 8.0])
 R_PERSONAL = 1.0        
@@ -100,7 +100,7 @@ walls = [
 for w_start, w_end in walls:
     # Extracts the X's for the first list, and Y's for the second
     ax.plot([w_start[0], w_end[0]], [w_start[1], w_end[1]], 'k-', linewidth=3)
-    
+
 # --- Generate the Visual Gradient (Background Potential Field) ---
 # Create a 100x100 grid spanning your map coordinates
 x_vals = np.linspace(-1, 10, 100)
@@ -148,7 +148,7 @@ def update(frame):
     global positions, velocities
     
     # Calculate total gradient (pass velocities now)
-    grads = compute_gradients(positions, velocities)
+    grads = compute_gradients(positions, velocities, beta=0.0)
     
     # Calculate new positions
     new_positions = positions - ALPHA * grads
